@@ -12,8 +12,18 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { RedisService } from 'src/redis/redis.service';
+import { JwtService } from '@nestjs/jwt';
 
 import { BadRequestExceptionFilter } from "../utils/filters"
+import { ConfigService } from '@nestjs/config';
+import { AuthConfig } from 'src/config';
+
+type DecodedAuthToken = {
+  sub: string;
+  email: string;
+  exp: number;
+  iat: number;
+};
 
 @UseInterceptors(ClassSerializerInterceptor)
 @UseFilters(BadRequestExceptionFilter)
@@ -31,17 +41,43 @@ export class ChatGateway
   @WebSocketServer()
   server: Server;
   private readonly logger = new Logger(ChatGateway.name);
-  constructor(private readonly redisService: RedisService) {}
+  constructor(private readonly redisService: RedisService, private readonly jwtService: JwtService, private readonly configService: ConfigService,) {}
 
   afterInit(server: Server) {
     this.logger.debug('WebSocket server initialized');
   }
 
-  handleConnection(client: Socket) {
-    this.logger.debug(`Client connected: ${client.id}`);
+  async handleConnection(client: Socket) {
+    this.logger.debug(`try to connect clientId: ${client.id}`);
+    
+    /* ToDo 
+      Object Auth ForExample => setAuth({"token": token}
+      Get => client.handshake.auth
+    */
+    
+    // This auth header for PostMan 
+    const authUserTokenData = await this.getHeaderDecodedAuthToken(client);
+    if (!authUserTokenData) {
+      this.logger.debug(`Connection refused: ${client.id}`);
+      client.disconnect()
+      return;
+    }
   }
 
-  
+  async getHeaderDecodedAuthToken(client: Socket) {
+    let decodedJwt: DecodedAuthToken | null = null;
+    this.logger.debug(client.handshake.headers.token)
+    try {
+      if (client.handshake.headers.token) {
+        let token = client.handshake.headers?.token as string
+        decodedJwt = await this.jwtService.verifyAsync(token, {
+          secret: this.configService.getOrThrow<AuthConfig>('auth').access.secret,
+        }) as DecodedAuthToken;
+      }
+    } catch (e) {}
+
+    return decodedJwt;
+  }
 
   handleDisconnect(client: Socket) {
     this.logger.debug(`Client disconnected: ${client.id}`);
