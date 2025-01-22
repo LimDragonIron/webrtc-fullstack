@@ -13,9 +13,10 @@ export interface BaseResponseHandler {
 }
 
 const request = async (config: InternalAxiosRequestConfig) => {
-  const token = SessionStoreManager.local.get(globalProperties.ACCESS_TOKEN)
-  if (token) {
-    config.headers.setAuthorization(`Bearer ${token}`)
+  const info = SessionStoreManager.local.get("account-info")
+  if (info) {
+    const paserInfo = JSON.parse(info)
+    config.headers.setAuthorization(`Bearer ${paserInfo.state.accountInfo.access_token}`)
   }
   return config
 }

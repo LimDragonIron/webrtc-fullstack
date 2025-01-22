@@ -16,13 +16,14 @@ export class LocalAuthGuard extends AuthGuard('local') {
         const errors = await validate(body);
         
         const errorMessages = errors.flatMap(({ constraints }) =>
-          Object.values(constraints),
+          Object.values(constraints).join(', '),
         );
     
         if (errorMessages.length > 0) {
           // return bad request if validation fails
           response.status(HttpStatus.BAD_REQUEST).send({
-            statusCode: HttpStatus.BAD_REQUEST,
+            code: HttpStatus.BAD_REQUEST,
+            data: "",
             error: 'Bad Request',
             message: errorMessages,
           });

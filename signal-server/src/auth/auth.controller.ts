@@ -5,6 +5,7 @@ import { Public } from './decorators/public.decorator';
 import { ApiTags } from '@nestjs/swagger';
 import { LoginDto } from './dto/login-dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { ResponseBuilder } from 'src/utils/response/response-builder';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -17,7 +18,15 @@ export class AuthController {
         if(!req.user) {
             throw new InternalServerErrorException()
         }
-        return this.authService.login(req.user)
+
+        const loginResult = await this.authService.login(req.user)
+        const { data, message, code, meta } = ResponseBuilder.OK_WITH(loginResult)
+        return {
+            data,
+            message,
+            code,
+            meta
+        }
     }
 
     @UseGuards(JwtAuthGuard)

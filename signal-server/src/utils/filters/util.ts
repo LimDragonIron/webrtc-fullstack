@@ -22,10 +22,12 @@ export enum HttpErrorCode {
     UNKNOWN_ERROR_CODE = "unknown_error_code",
     // 400 - Account Not Found.
     ACCOUNT_NOT_FOUND = "account_not_found",
+    ACCOUNT_PASSWORD_NOT_MATCH = "account_passwrod_not_match"
 }
 
 export const ErrorCodeToStatusMap: Record<HttpErrorCode, number> = {
     [HttpErrorCode.ACCOUNT_NOT_FOUND]: 400,
+    [HttpErrorCode.ACCOUNT_PASSWORD_NOT_MATCH]: 400,
     [HttpErrorCode.VALIDATION_ERROR]: 400,
     [HttpErrorCode.UNAUTHORIZED]: 401,
     [HttpErrorCode.RESTRICTED_RESOURCE]: 403,

@@ -12,9 +12,11 @@ export class AuthService {
     private readonly userService: UserService,
   ) {}
 
-  async login(user: Pick<User, 'email' | 'id'>) {
+  async login(user: User) {
     const payload = { email: user.email, sub: user.id };
     return {
+      email: user.email,
+      name: user.name,
       access_token: await this.jwtService.signAsync(payload),
     };
   }
@@ -35,7 +37,7 @@ export class AuthService {
     if (isMatch) {
       return result
     } else {
-      throw new CustomHttpException("Password does not match.", HttpErrorCode.ACCOUNT_NOT_FOUND)
+      throw new CustomHttpException("Password does not match.", HttpErrorCode.ACCOUNT_PASSWORD_NOT_MATCH)
     }
   }
 }

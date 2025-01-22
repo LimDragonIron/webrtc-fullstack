@@ -1,14 +1,15 @@
 "use client"
-import { AccountInfo } from "@/interfaces"
+
+import { Account } from "@/schema/signinSchema"
 import { create } from "zustand"
 import { persist, devtools, createJSONStorage } from "zustand/middleware"
 
 export type AccountState = {
-    accountInfo: AccountInfo
+    accountInfo: Account
 }
 
 export type AccountActions = {
-    setAccountInfo: (info: AccountInfo) => void
+    setAccountInfo: (info: Account) => void
 }
 
 export type AccountStore = AccountState & AccountActions
@@ -17,7 +18,7 @@ const defaultInitState: AccountState = {
     accountInfo: {
         email: "",
         name: "",
-        token: "",
+        access_token: "",
     },
 }
 
@@ -25,7 +26,7 @@ export const useAccountStore = create<AccountStore>()(
     devtools(
         persist((set, get)=>({
             ...defaultInitState,
-            setAccountInfo: (info: AccountInfo) => set(state => ({
+            setAccountInfo: (info: Account) => set(state => ({
                 ...state,
                 accountInfo: {
                     ...state.accountInfo,

@@ -1,7 +1,13 @@
 import type { NextConfig } from "next";
+import NextJsAppProperties from "./next.properties"
 
 const nextConfig: NextConfig = {
   /* config options here */
+  output:"standalone",
+  reactStrictMode: false,
+  env: {
+    login_endpoint: NextJsAppProperties.login_endpoint
+  },
   async rewrites() {
     return [
       {
