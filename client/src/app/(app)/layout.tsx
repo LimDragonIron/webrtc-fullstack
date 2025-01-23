@@ -6,14 +6,13 @@ import { useEffect } from "react";
 import { QueryErrorResetBoundary } from "@tanstack/react-query";
 import { ErrorBoundary } from 'react-error-boundary';
 import { Button } from "@/components/ui/button";
+import WithAuth from "@/components/WithAuth";
 
 export interface AppLayoutProps {
     children: React.ReactNode
 }
 
 const AppLayout = ({children}:AppLayoutProps) => {
-    const store = useAccountStore()
-
     return (
         <ClientQueryProvider>
             <QueryErrorResetBoundary>
@@ -37,4 +36,4 @@ const AppLayout = ({children}:AppLayoutProps) => {
     );
 }
 
-export default AppLayout;
+export default  WithAuth(AppLayout);
