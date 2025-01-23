@@ -9,9 +9,7 @@ export interface WebRtcLayoutProps {
 const WebRtcLayout = ({children}: WebRtcLayoutProps) => {
     return (
         <SocketProvider>
-        <div>
-            
-        </div>
+            {children}
         </SocketProvider>
     );
 }
