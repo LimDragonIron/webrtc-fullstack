@@ -34,7 +34,13 @@ type DecodedAuthToken = {
     whitelist: true,
   }),
 )
-@WebSocketGateway(4000, { namespace: 'chat' })
+@WebSocketGateway(4000, { 
+  cors: {
+    origin: 'http://localhost:3000',
+    allowedHeaders: ["Authorization"],
+    credentials: true
+  },
+  namespace: '/socket/chat' })
 export class ChatGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
@@ -49,16 +55,12 @@ export class ChatGateway
 
   async handleConnection(client: Socket) {
     this.logger.debug(`try to connect clientId: ${client.id}`);
-    
-    /* ToDo 
-      Object Auth ForExample => setAuth({"token": token}
-      Get => client.handshake.auth
-    */
-    
-    // This auth header for PostMan 
     const authUserTokenData = await this.getHeaderDecodedAuthToken(client);
     if (!authUserTokenData) {
       this.logger.debug(`Connection refused: ${client.id}`);
+      client.emit('connect_error', (error: any) => {
+        console.error('Connection error:', error);
+      });
       client.disconnect()
       return;
     }
@@ -66,10 +68,10 @@ export class ChatGateway
 
   async getHeaderDecodedAuthToken(client: Socket) {
     let decodedJwt: DecodedAuthToken | null = null;
-    this.logger.debug(client.handshake.headers.token)
+    this.logger.debug(client.handshake.headers.authorization)
     try {
-      if (client.handshake.headers.token) {
-        let token = client.handshake.headers?.token as string
+      if (client.handshake.headers.authorization) {
+        let token = client.handshake.headers?.authorization.split(" ")[1]
         decodedJwt = await this.jwtService.verifyAsync(token, {
           secret: this.configService.getOrThrow<AuthConfig>('auth').access.secret,
         }) as DecodedAuthToken;

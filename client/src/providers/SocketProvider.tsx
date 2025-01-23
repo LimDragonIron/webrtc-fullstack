@@ -1,5 +1,7 @@
 'use client'
 
+import { useAccountStore } from '@/stores'
+import { useRouter } from 'next/navigation'
 import { createContext, useContext, useEffect, useState } from 'react'
 import { io as ClientIO } from 'socket.io-client'
 
@@ -20,6 +22,8 @@ export const useSocket = () => {
 export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
   const [socket, setSocket] = useState<any | null>(null)
   const [isConnected, setIsConnected] = useState(false)
+  const { accountInfo } = useAccountStore()
+  const router = useRouter();
 
   useEffect(() => {
     if (!socket) {
@@ -29,14 +33,17 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
     socket.on('disconnect', async () => {
       setIsConnected(false)
     })
-  }, [])
+  }, [socket])
 
   useEffect(() => {
+    const token = accountInfo.access_token
     const socketInstance = new (ClientIO as any)(
-      process.env.NEXT_PUBLIC_BACK_URL,
+      `${process.env.NEXT_PUBLIC_BACK_SOCKET_URL}/socket/chat`,
       {
-        path: '/api/v1/socket/chat',
-        addTrailingSlash: false
+        withCredentials: true,
+        extraHeaders: {
+          Authorization: `Bearer ${token}`
+        }
       }
     )
 
@@ -44,12 +51,17 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
       setIsConnected(true)
     })
 
+    socketInstance.on('connect_error', (error: any) => {
+      alert('Failed to connect to the server. Please try again later.');
+      router.back(); // Navigate back to the previous page
+    });
+
     setSocket(socketInstance)
 
     return () => {
       socketInstance.disconnect()
     }
-  }, [])
+  }, [accountInfo])
 
   return (
     <SokectContext.Provider value={{ socket, isConnected }}>
