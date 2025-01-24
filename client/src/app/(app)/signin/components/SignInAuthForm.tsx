@@ -31,11 +31,10 @@ const SignInAuthForm = ({ className, ...props }: SignInAuthFormProps) => {
   const store = useAccountStore()
 
   const onSuccess = (response:any): void => {
-    console.log(response)
     store.setAccountInfo(response.data)
     setIsEmailError(false)
     setIsPasswordError(false)
-    // router.push('/main')
+    router.push('/')
   }
 
   const onError = (error: AxiosResponse): void => {

@@ -14,10 +14,6 @@ const nextConfig: NextConfig = {
         source: "/api/v1/:path*",
         destination: `${process.env.NEXT_PUBLIC_BACK_URL}/:path*`,
       },
-      {
-        source: "/api/v1/socket/:path*",
-        destination: `${process.env.NEXT_PUBLIC_BACK_SOCKET_URL}/:path*`,
-      },
     ]
   }
 };

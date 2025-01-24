@@ -14,6 +14,11 @@ export class RedisService {
     await this.client.sAdd(`room:${room}:users`, userId);
   }
 
+  async findUserInRoom(room: string, userId: string){
+    const isMember = await this.client.sIsMember(`room:${room}:users`, userId);
+    return isMember
+  }
+
   async removeUserFromRoom(room: string, userId: string) {
     await this.client.sRem(`room:${room}:users`, userId);
   }

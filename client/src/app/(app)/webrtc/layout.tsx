@@ -1,6 +1,9 @@
-'use client'
+"use client"
+import dynamic from 'next/dynamic';
+
 import { SocketProvider } from '@/providers/SocketProvider';
 import React, { useEffect, useRef, useState } from 'react';
+
 
 export interface WebRtcLayoutProps {
     children: React.ReactNode
@@ -8,9 +11,11 @@ export interface WebRtcLayoutProps {
 
 const WebRtcLayout = ({children}: WebRtcLayoutProps) => {
     return (
-        <SocketProvider>
+        // <SocketProvider>
+        <>
             {children}
-        </SocketProvider>
+        </>
+        // </SocketProvider>
     );
 }
 

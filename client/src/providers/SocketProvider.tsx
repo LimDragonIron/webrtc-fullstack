@@ -51,7 +51,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
       setIsConnected(true)
     })
 
-    socketInstance.on('connect_error', (error: any) => {
+    socketInstance.on('connection_refused', (error: any) => {
       alert('Failed to connect to the server. Please try again later.');
       router.back(); // Navigate back to the previous page
     });

@@ -32,16 +32,16 @@ async function bootstrap() {
   
   const PORT = process.env.PORT || 8080
 
+  setSwagger(app)
+  await app.listen(PORT);
+
   logger.log(`> NODE_ENV is ${process.env.NODE_ENV}`)
   logger.log(`> Ready on PORT: ${PORT}`)
+  logger.log(`> Application running at ${await app.getUrl()}`)
   logger.log(
       `> System Time Zone: ${Intl.DateTimeFormat().resolvedOptions().timeZone}`,
   )
   logger.log(`> Current System Time: ${new Date().toString()}`)
-
-  setSwagger(app)
-  await app.listen(PORT);
-
 }
 
 function setSwagger(app: INestApplication) {

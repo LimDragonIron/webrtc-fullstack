@@ -51,6 +51,9 @@ export default {
   				'5': 'hsl(var(--chart-5))'
   			}
   		},
+		width: {
+		'calc-width': 'calc(var(--width) * var(--cols))',
+		},
   		borderRadius: {
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',

@@ -36,9 +36,10 @@ type DecodedAuthToken = {
 )
 @WebSocketGateway(4000, { 
   cors: {
-    origin: 'http://localhost:3000',
+    // origin: ['http://localhost:3000','http://172.30.1.55:3000'],
+    origin: "*",
     allowedHeaders: ["Authorization"],
-    credentials: true
+    credentials: false,
   },
   namespace: '/socket/chat' })
 export class ChatGateway
@@ -55,15 +56,13 @@ export class ChatGateway
 
   async handleConnection(client: Socket) {
     this.logger.debug(`try to connect clientId: ${client.id}`);
-    const authUserTokenData = await this.getHeaderDecodedAuthToken(client);
-    if (!authUserTokenData) {
-      this.logger.debug(`Connection refused: ${client.id}`);
-      client.emit('connect_error', (error: any) => {
-        console.error('Connection error:', error);
-      });
-      client.disconnect()
-      return;
-    }
+    // const authUserTokenData = await this.getHeaderDecodedAuthToken(client);
+    // if (!authUserTokenData) {
+    //   this.logger.debug(`Connection refused: ${client.id}`);
+    //   client.emit('connection_refused', "token Not Vaild");
+    //   client.disconnect()
+    //   return;
+    // }
   }
 
   async getHeaderDecodedAuthToken(client: Socket) {
@@ -90,10 +89,62 @@ export class ChatGateway
     @MessageBody() data: { room: string },
     @ConnectedSocket() client: Socket,
   ) {
-    client.join(data.room);
-    await this.redisService.addUserToRoom(data.room, client.id);
-    client.emit('joinedRoom', data.room);
-    this.server.to(data.room).emit('userJoined', client.id);
+    // client.join(data.room);
+    // await this.redisService.addUserToRoom(data.room, client.id);
+    // client.emit('joinedRoom', data.room);
+    // this.server.to(data.room).emit('userJoined', client.id);
+    const existingSocket = await this.redisService.findUserInRoom(data.room,client.id)
+    console.log(existingSocket)
+    if(!existingSocket){
+      await this.redisService.addUserToRoom(data.room, client.id)
+      const users = await this.redisService.getUsersInRoom(data.room)
+      console.log(users)
+      const test = users.filter((user) => user !== client.id)
+      console.log(`test: ${test}`)
+
+      client.emit(`${data.room}-update-user-list`, {
+        users: users
+          .filter((user) => user !== client.id),
+        current: client.id,
+      });
+      client.broadcast.emit(`${data.room}-add-user`, {
+        user: client.id,
+      });
+    }
+      return this.logger.log(`Client ${client.id} joined ${data.room}`)
+  }
+
+  @SubscribeMessage('call-user')
+  async handleCallUser(
+    @MessageBody() data: { to: string, offer: any },
+    @ConnectedSocket() client: Socket,
+  ) {
+    // Emit the call-made event to the target socket
+    client.to(data.to).emit('call-made', {
+      offer: data.offer,
+      socket: client.id,
+    });
+  }
+
+  @SubscribeMessage('make-answer')
+  async handleMakeAnswer(
+    @MessageBody() data: { to: string, answer: any },
+    @ConnectedSocket() client: Socket,
+  ): Promise<void> {
+    client.to(data.to).emit('answer-made', {
+      socket: client.id,
+      answer: data.answer,
+    });
+  }
+
+  @SubscribeMessage('reject-call')
+  async handleRejectCall(
+    @MessageBody() data: { from: string },
+    @ConnectedSocket() client: Socket,
+  ): Promise<void> {
+    client.to(data.from).emit('call-rejected', {
+      socket: client.id,
+    });
   }
 
   @SubscribeMessage('leaveRoom')
