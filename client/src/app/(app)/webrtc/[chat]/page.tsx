@@ -19,7 +19,7 @@ const ChatPage = () => {
     const pathname = usePathname()
     const userMediaStream = useCreateMediaStream(localVideoRef);
     const { connectedUsers, shareScreen, cancelScreenSharing, isScreenShared } = useStartPeerSession(
-        pathname.split('/')[1],
+        pathname.split('/')[2],
         userMediaStream,
         localVideoRef,
         "tokenisTesting"
@@ -41,8 +41,8 @@ const ChatPage = () => {
     }
 
     return (
-        <div className='container'>
-            <div className='' ref={mainRef}>
+        <div className=' min-h-screen flex-col flex justify-center items-center'>
+            <div className=' m-0 flex justify-center items-center h-full bg-chat-main' ref={mainRef}>
                 <div className='flex justify-center flex-wrap w-calc-width' ref={galleryRef}>
                     <LocalVideo ref={localVideoRef} autoPlay playsInline muted />
                     {

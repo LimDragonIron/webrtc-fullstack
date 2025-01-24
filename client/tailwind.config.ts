@@ -49,7 +49,10 @@ export default {
   				'3': 'hsl(var(--chart-3))',
   				'4': 'hsl(var(--chart-4))',
   				'5': 'hsl(var(--chart-5))'
-  			}
+  			},
+			chat: {
+				main: "#1c1c1e"
+			}
   		},
 		width: {
 		'calc-width': 'calc(var(--width) * var(--cols))',

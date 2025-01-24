@@ -80,7 +80,19 @@ export class ChatGateway
     return decodedJwt;
   }
 
-  handleDisconnect(client: Socket) {
+  async handleDisconnect(client: Socket) {
+    const keys = await this.redisService.getKeys('*'); 
+    for (const key of keys) {
+      const roomName = key.split(":")[1]
+      const isMember = await this.redisService.findUserInRoom(roomName, client.id); 
+      if (isMember) {
+        await this.redisService.removeUserFromRoom(roomName, client.id); 
+        client.broadcast.emit(`${roomName}-remove-user`, {
+          socketId: client.id,
+        });
+      }
+    }
+  
     this.logger.debug(`Client disconnected: ${client.id}`);
   }
 
@@ -89,19 +101,11 @@ export class ChatGateway
     @MessageBody() data: { room: string },
     @ConnectedSocket() client: Socket,
   ) {
-    // client.join(data.room);
-    // await this.redisService.addUserToRoom(data.room, client.id);
-    // client.emit('joinedRoom', data.room);
-    // this.server.to(data.room).emit('userJoined', client.id);
     const existingSocket = await this.redisService.findUserInRoom(data.room,client.id)
-    console.log(existingSocket)
     if(!existingSocket){
       await this.redisService.addUserToRoom(data.room, client.id)
       const users = await this.redisService.getUsersInRoom(data.room)
-      console.log(users)
-      const test = users.filter((user) => user !== client.id)
-      console.log(`test: ${test}`)
-
+      this.logger.log(`RoomMembers: ${users}`)
       client.emit(`${data.room}-update-user-list`, {
         users: users
           .filter((user) => user !== client.id),

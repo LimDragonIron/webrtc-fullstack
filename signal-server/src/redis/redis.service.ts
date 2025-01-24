@@ -32,6 +32,11 @@ export class RedisService {
     return keys.map((key) => key.split(':')[1]);
   }
 
+  async getKeys(key:string):Promise<string[]> {
+    const keys = await this.client.keys(key);
+    return keys
+  }
+
   async saveMessage(room: string, userId: string, message: string) {
     const timestamp = new Date().toISOString();
     await this.client.rPush(
